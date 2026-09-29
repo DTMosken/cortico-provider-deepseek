@@ -4,12 +4,37 @@
   "type": "module",
   "description": "Cortico 的 DeepSeek Responses API 模型供应商扩展。",
   "license": "MIT",
-  "engines": { "node": ">=22" },
-  "main": "./index.ts",
-  "keywords": ["cortico-provider"],
-  "files": ["index.ts", "pricing.ts", "console", "dist", "README.md", "LICENSE"],
-  "scripts": {
-    "build:console": "esbuild console/client.ts --bundle --format=esm --outfile=dist/console.js"
+  "engines": {
+    "node": ">=22"
   },
-  "cortico": { "kind": "provider", "api": 5, "consoleClient": "dist/console.js" }
+  "main": "./index.ts",
+  "keywords": [
+    "cortico-provider"
+  ],
+  "files": [
+    "index.ts",
+    "pricing.ts",
+    "console",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build:console": "esbuild console/client.ts --bundle --format=esm --outfile=dist/console.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "cortico": {
+    "kind": "provider",
+    "api": 5,
+    "consoleClient": "dist/console.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "cortico": "^0.1.2",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "pnpm@11.5.0"
 }
