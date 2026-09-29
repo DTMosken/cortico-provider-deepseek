@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { ProviderConsoleHost } from 'cortico/providers/console/types.ts';
 import type { LLMProviderEntry } from 'cortico/core/types.ts';
-import deepseekProvider from '../provider-deepseek/index.ts';
+import deepseekProvider from '../index.ts';
 
 const JSDOM_MODULE = new URL('../../Cortico/node_modules/jsdom/lib/api.js', import.meta.url).href;
 const UI_MODULE = '../../Cortico/src/web/client/ui/index.ts';
-const PRICING_MODULE = '../provider-deepseek/console/pricing-panel.ts';
-const SCHEDULE_MODULE = '../provider-deepseek/console/schedule-panel.ts';
+const PRICING_MODULE = '../console/pricing-panel.ts';
+const SCHEDULE_MODULE = '../console/schedule-panel.ts';
 const { JSDOM } = await import(JSDOM_MODULE) as {
   JSDOM: new (html: string, options: { url: string }) => { window: { document: any; AbortController: typeof AbortController } };
 };

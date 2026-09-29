@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import deepseekProvider from '../provider-deepseek/index.ts';
-import { currentPricingBand, defaultPricingSchedule, parsePricingSchedule } from '../provider-deepseek/pricing.ts';
+import deepseekProvider from '../index.ts';
+import { currentPricingBand, defaultPricingSchedule, parsePricingSchedule } from '../pricing.ts';
 import type { ProviderConsoleHost } from 'cortico/providers/console/types.ts';
 import { build } from 'esbuild';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -31,7 +31,7 @@ function costAt(startedAt: string, model = 'deepseek-flash'): number | null {
 }
 describe('DeepSeek provider module', () => {
  it('ships every panel declared by its console contribution', async () => {
-  const pkg = JSON.parse(readFileSync(new URL('../provider-deepseek/package.json', import.meta.url), 'utf8'));
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   expect(pkg.cortico.consoleClient).toBe('dist/console.js');
   expect(pkg.files).toEqual(expect.arrayContaining(['console', 'dist']));
   expect(pkg.scripts['build:console']).toBeTruthy();
@@ -39,7 +39,7 @@ describe('DeepSeek provider module', () => {
   try {
    const outfile = join(outDir, 'console.mjs');
    await build({
-    entryPoints: [fileURLToPath(new URL('../provider-deepseek/console/client.ts', import.meta.url))],
+    entryPoints: [fileURLToPath(new URL('../console/client.ts', import.meta.url))],
     bundle: true, format: 'esm', outfile,
    });
    const bundle = (await import(pathToFileURL(outfile).href)).default;
@@ -93,14 +93,14 @@ describe('DeepSeek provider module', () => {
  });
 
  it('declares the provider contract and DeepSeek URL', () => {
-  const pkg = JSON.parse(readFileSync(new URL('../provider-deepseek/package.json', import.meta.url), 'utf8'));
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   expect(deepseekProvider.id).toBe('deepseek');
   expect(deepseekProvider.defaultBaseUrl).toBe('https://api.deepseek.com');
   expect(parseExtensionManifest(pkg)).toMatchObject({ ok: true, manifest: { kind: 'provider', api: 5 } });
   expect(pkg.files).toContain('pricing.ts');
  });
  it('uses a new immutable asset URL for the bundle that adds pricing controls', () => {
-  const pkg = JSON.parse(readFileSync(new URL('../provider-deepseek/package.json', import.meta.url), 'utf8'));
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   expect(extensionAssetUrl(pkg.name, pkg.version, 'console.js')).not.toBe(
    extensionAssetUrl(pkg.name, '0.1.2', 'console.js'),
   );
