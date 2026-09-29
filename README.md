@@ -2,7 +2,7 @@
 
 # cortico-provider-deepseek
 
-`cortico-provider-deepseek` 是 Cortico 的 DeepSeek 模型供应商扩展，使用 DeepSeek Responses API。它是独立的 npm 包，不依赖 `cortico-bot-continuity`。
+`cortico-provider-deepseek` 是 Cortico 的 DeepSeek 模型供应商扩展，使用 DeepSeek Responses API。
 
 ## 安装
 
