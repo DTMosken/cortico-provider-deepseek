@@ -30,3 +30,9 @@ corepack pnpm add --ignore-workspace cortico-provider-deepseek
 “当前计价时段”面板可调整两段高峰时间和例外日期；例外日期每行填写一个 `YYYY-MM-DD`。初始列表包含 2026 年中国法定节假日；后续年份需要按官方安排更新。保存后的时段设置用于新请求。
 
 价格可能变化，发布的单价以 [DeepSeek 中文价格页](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/) 为准。
+
+## 许可证与代码来源
+
+项目采用 MIT License，详见 [LICENSE](LICENSE)。
+
+部分代码源自 Phantivia 编写的 Cortico `src/providers/openai-responses-compat/`。新增和修改部分由 DTMosken 编写；LICENSE 保留上游版权声明。
