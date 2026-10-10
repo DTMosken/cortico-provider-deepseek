@@ -1,4 +1,5 @@
 import type { ConsolePanel, ConsolePanelContext } from 'cortico/web/shared/client-panel.ts';
+import { pick } from 'cortico/core/language.ts';
 import { currentPricingBand, type DeepSeekPricingSchedule } from '../pricing.ts';
 
 interface ScheduleState {
@@ -9,20 +10,21 @@ interface ScheduleState {
 
 export const schedulePanel: ConsolePanel = {
   mount: async (ctx: ConsolePanelContext) => {
-    const zh = ctx.language === 'zh';
-    const S = zh ? {
+    const S = pick(ctx.language, { zh: {
       current: '当前计价时段', peak: '高峰', offPeak: '空闲', timezone: '北京时间（Asia/Shanghai）',
       windows: '高峰时段', weekday: '周一至周五；周末始终为空闲时段', exceptions: '例外日期（每行 YYYY-MM-DD）',
       from: '开始', to: '结束',
+      locale: 'zh-CN', window: (index: number) => `时段 ${index + 1}`,
       save: '保存时段', saved: '峰谷设置已保存', invalid: '时段格式错误；请填写 HH:MM，例外日期每行填写 YYYY-MM-DD。',
       refreshError: '无法读取峰谷设置',
-    } : {
+    }, en: {
       current: 'Active pricing band', peak: 'Peak', offPeak: 'Off-peak', timezone: 'China Standard Time (Asia/Shanghai)',
       windows: 'Peak windows', weekday: 'Monday to Friday; weekends are always off-peak', exceptions: 'Exception dates (one YYYY-MM-DD per line)',
       from: 'From', to: 'To',
+      locale: 'en-GB', window: (index: number) => `Window ${index + 1}`,
       save: 'Save schedule', saved: 'Pricing schedule saved', invalid: 'Invalid time or date format. Use HH:MM and one YYYY-MM-DD date per line.',
       refreshError: 'Unable to load pricing schedule',
-    };
+    } });
     const status = ctx.ui.foldSheet('deepseek-schedule', { title: S.current });
     const message = ctx.ui.msgline();
     ctx.root.append(status.el, message);
@@ -38,7 +40,7 @@ export const schedulePanel: ConsolePanel = {
 
     const updateStatus = (band = currentPricingBand(state.schedule, new Date())) => {
       const now = new Date();
-      const time = new Intl.DateTimeFormat(zh ? 'zh-CN' : 'en-GB', {
+      const time = new Intl.DateTimeFormat(S.locale, {
         timeZone: 'Asia/Shanghai', dateStyle: 'medium', timeStyle: 'short', hourCycle: 'h23',
       }).format(now);
       status.note.textContent = `${band === 'peak' ? S.peak : S.offPeak} · ${time} · ${S.timezone}`;
@@ -63,7 +65,7 @@ export const schedulePanel: ConsolePanel = {
         field.style.minWidth = '0';
         times.append(field);
       }
-      group.append(ctx.ui.h('div', 'fieldlabel', zh ? `时段 ${index + 1}` : `Window ${index + 1}`), times);
+      group.append(ctx.ui.h('div', 'fieldlabel', S.window(index)), times);
       windows.append(group);
     });
     status.body.append(ctx.ui.section(S.windows), ctx.ui.msgline(S.weekday), windows);

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ProviderConsoleHost } from 'cortico/providers/console/types.ts';
 import type { LLMProviderEntry } from 'cortico/core/types.ts';
 import deepseekProvider from '../index.ts';
+import { languageOfLocale, type Language } from 'cortico/core/language.ts';
 
 const JSDOM_MODULE = new URL('../../Cortico/node_modules/jsdom/lib/api.js', import.meta.url).href;
 const UI_MODULE = '../../Cortico/src/web/client/ui/index.ts';
@@ -14,13 +15,13 @@ const { createConsoleUi } = await import(UI_MODULE);
 const { pricingPanel } = await import(PRICING_MODULE);
 const { schedulePanel } = await import(SCHEDULE_MODULE);
 
-function panelContext(panelId: 'pricing' | 'schedule') {
+function panelContext(panelId: 'pricing' | 'schedule', language: Language = 'zh') {
   const { window } = new JSDOM('<!doctype html><body><div class="connection-step"></div></body>', { url: 'http://localhost' });
   const controller = new window.AbortController();
   const root = window.document.querySelector('.connection-step');
   const entry: LLMProviderEntry = { kind: 'deepseek', baseUrl: 'https://api.deepseek.com' };
   const host: ProviderConsoleHost = {
-    language: 'zh', editing: true,
+    language, editing: true,
     entries: () => [{ name: 'main', entry }],
     instance: () => ({ client: {} as never }),
     save: () => {},
@@ -31,13 +32,26 @@ function panelContext(panelId: 'pricing' | 'schedule') {
     memo: { get: <T>(_key: string, fallback: T): T => fallback, set: () => {} },
   });
   return {
-    panelId, root, ui, signal: controller.signal, language: 'zh', scope: { instance: 'main' },
+    panelId, root, ui, signal: controller.signal, language, scope: { instance: 'main' },
     invoke: (method: string, args?: unknown[]) => Promise.resolve(contribution.invoke!(panelId, method, args ?? [])),
     interval: () => ({ dispose() {} }),
   };
 }
 
 describe('DeepSeek connection panels', () => {
+  it.each([
+    ['zh-Hant', 'DeepSeek 官方价目', '当前计价时段', '时段 1'],
+    ['en', 'DeepSeek official rates', 'Active pricing band', 'Window 1'],
+    ['ja', 'DeepSeek official rates', 'Active pricing band', 'Window 1'],
+  ])('renders %s through its Chinese or English fallback', async (locale, pricingTitle, scheduleTitle, windowLabel) => {
+    const pricing = panelContext('pricing', languageOfLocale(locale)!);
+    await pricingPanel.mount(pricing);
+    expect(pricing.root.textContent).toContain(pricingTitle);
+    const schedule = panelContext('schedule', languageOfLocale(locale)!);
+    await schedulePanel.mount(schedule);
+    expect(schedule.root.textContent).toContain(scheduleTitle);
+    expect(schedule.root.textContent).toContain(windowLabel);
+  });
   it('shows the collapsed endpoint quote editor inside the official pricing card', async () => {
     const ctx = panelContext('pricing');
     await pricingPanel.mount(ctx);

@@ -17,13 +17,15 @@
     "pricing.ts",
     "console",
     "dist",
+    "scripts/migrate-rmb-currency.mjs",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build:console": "esbuild console/client.ts --bundle --format=esm --outfile=dist/console.js",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate:currency": "node scripts/migrate-rmb-currency.mjs"
   },
   "cortico": {
     "kind": "provider",
@@ -32,7 +34,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "cortico": "^0.1.2",
+    "cortico": "^0.1.11",
     "esbuild": "^0.28.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

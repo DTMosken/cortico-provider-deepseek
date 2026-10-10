@@ -1,5 +1,9 @@
 import type { PriceDefinition } from 'cortico/providers/pricebook.ts';
 
+export function normalizePricing(pricing: PriceDefinition[]): PriceDefinition[] {
+  return pricing.map(price => price.currency.trim() === 'RMB' ? { ...price, currency: 'CNY' } : price);
+}
+
 export interface DeepSeekPricingSchedule {
   windows: Array<{ from: string; to: string }>;
   exceptDates: string[];
@@ -80,7 +84,7 @@ export function pricesForSchedule(scheduleValue: unknown): PriceDefinition {
   const schedule = parsePricingSchedule(scheduleValue);
   return {
     models: ['deepseek-flash'],
-    currency: 'RMB',
+    currency: 'CNY',
     basis: 'marginal',
     rules: IDLE_RULES,
     source: 'DeepSeek official pricing',

@@ -4,7 +4,7 @@
 
 ## 检查环境
 
-工作流在 GitHub 托管的 Ubuntu runner 上使用 Node 24 和 `package.json` 声明的 pnpm 版本。Cortico 固定在 `6bf548de2bd395d598eebae43115d54eaaaef71c`，用于类型、控制台 UI、测试夹具与扩展检查。
+工作流在 GitHub 托管的 Ubuntu runner 上使用 Node 24 和 `package.json` 声明的 pnpm 版本。Cortico 检查基线由 `release.yml` 中的 `CORTICO_REF` 指定，用于类型、控制台 UI、测试夹具与扩展检查。
 
 两个仓库按以下目录关系检出；本地运行相同检查也使用这个关系：
 

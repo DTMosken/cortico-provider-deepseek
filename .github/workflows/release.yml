@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  CORTICO_REF: f180d2f1144c7901a752efc7d5b14174497d1077
+  CORTICO_REF: 88a5e4ddfd8504eee8eb6353d7a9aab9f0e455be
 
 jobs:
   release:

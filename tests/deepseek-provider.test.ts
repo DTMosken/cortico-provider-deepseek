@@ -11,6 +11,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { priceUsage } from 'cortico/core/generation.ts';
 import { nullLogger } from 'cortico/core/util.ts';
 import { validateEntry } from 'cortico/providers/configuration.ts';
+import { languageOfLocale } from 'cortico/core/language.ts';
 import { parseExtensionManifest } from 'cortico/extensions/manifest.ts';
 import { extensionAssetUrl } from 'cortico/extensions/manifest.ts';
 import { quotePrices } from 'cortico/providers/pricebook.ts';
@@ -61,6 +62,8 @@ describe('DeepSeek provider module', () => {
   ]);
   expect(deepseekProvider.localize?.('zh').reasoningTiers?.map(({ label }) => label)).toEqual(['高', '关闭', '低', '最大']);
   expect(deepseekProvider.localize?.('en').reasoningTiers?.map(({ label }) => label)).toEqual(['High', 'Off', 'Low', 'Max']);
+  expect(deepseekProvider.localize?.(languageOfLocale('zh-Hant')!).reasoningTiers?.map(({ label }) => label)).toEqual(['高', '关闭', '低', '最大']);
+  expect(deepseekProvider.localize?.(languageOfLocale('ja')!).reasoningTiers?.map(({ label }) => label)).toEqual(['High', 'Off', 'Low', 'Max']);
   const normalized = deepseekProvider.normalize?.({
    kind: 'deepseek', baseUrl: 'https://api.deepseek.com',
    spec: { model: 'deepseek-flash', thinking: true },
@@ -111,6 +114,7 @@ describe('DeepSeek provider module', () => {
   expect(provider.listModels).toEqual(expect.any(Function));
  });
  it('uses idle rates outside weekday peaks', () => {
+    expect(chargeAt('2026-09-22T04:00:00Z')?.quote.currency).toBe('CNY');
     expect(costAt('2026-09-22T04:00:00Z')).toBeCloseTo(5.02);
     expect(costAt('2026-09-22T10:00:00Z')).toBeCloseTo(5.02);
     expect(costAt('2026-09-26T02:00:00Z')).toBeCloseTo(5.02);
@@ -188,6 +192,27 @@ describe('DeepSeek provider module', () => {
    { meter: 'uncachedInput', perMillion: 3 },
    { meter: 'output', perMillion: 9 },
   ]);
+  expect(saved?.pricing?.[0].currency).toBe('CNY');
+ });
+ it('normalizes custom RMB quotes before pricing without changing their rates or the input entry', async () => {
+  const configured: LLMProviderEntry = { ...entry, pricing: [
+   { models: ['*'], currency: 'RMB', basis: 'marginal', source: 'custom', rules: [{ meter: 'output', perMillion: 9 }] },
+   { models: ['*'], currency: 'USD', basis: 'equivalent', source: 'custom', rules: [{ meter: 'output', perMillion: 2 }] },
+  ] };
+  const normalized = validateEntry(deepseekProvider, configured);
+  const at = { startedAt: '2026-09-22T04:00:00Z', requestedServiceTier: null };
+  const request = { model: 'deepseek-flash' } as Request;
+  const charges = priceUsage(meters, quotePrices(normalized, request, at, deepseekProvider.prices!(normalized, request, at)));
+  expect(charges.map(charge => [charge.quote.currency, charge.amount])).toEqual([['CNY', 9], ['USD', 2]]);
+  expect(configured.pricing?.[0].currency).toBe('RMB');
+  const contribution = deepseekProvider.console!({
+   language: languageOfLocale('zh-Hant')!, editing: true,
+   entries: () => [{ name: 'main', entry: configured }],
+   instance: () => ({ client: {} as never }), save: () => {},
+  });
+  expect(contribution.panels?.find(panel => panel.id === 'pricing')?.title).toBe('成本与计价');
+  const state = await contribution.invoke!('pricing', 'state', [{ name: 'main' }]) as { custom: Array<{ currency: string }> };
+  expect(state.custom.map(price => price.currency)).toEqual(['CNY', 'USD']);
  });
   it('applies half-open windows in Shanghai time', () => {
   const cases: Array<[string, number]> = [
