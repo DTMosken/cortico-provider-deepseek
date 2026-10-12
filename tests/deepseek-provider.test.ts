@@ -31,6 +31,11 @@ function costAt(startedAt: string, model = 'deepseek-flash'): number | null {
   return chargeAt(startedAt, model)?.amount ?? null;
 }
 describe('DeepSeek provider module', () => {
+ it.each(['zh', 'en', 'zh-Hant', 'ja'])('keeps its provider title in %s', (locale) => {
+  const localized = deepseekProvider.localize?.(languageOfLocale(locale)!);
+  expect(localized?.title).toBe(deepseekProvider.title);
+ });
+
  it('ships every panel declared by its console contribution', async () => {
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   expect(pkg.cortico.consoleClient).toBe('dist/console.js');

@@ -34,6 +34,7 @@ export const DEEPSEEK_PROVIDER: ProviderModule = {
   reasoningTiers: reasoningTiers('zh'),
   localize: (language) => ({
     ...responsesCompat.localize?.(language),
+    title: 'DeepSeek',
     reasoningTiers: reasoningTiers(language),
   }),
   normalize(entry) {
