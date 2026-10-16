@@ -1,6 +1,6 @@
 {
   "name": "cortico-provider-deepseek",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "type": "module",
   "description": "Cortico 的 DeepSeek Responses API 模型供应商扩展。",
   "license": "MIT",

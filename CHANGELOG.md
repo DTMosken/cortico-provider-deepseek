@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2026-10-16
 
 - Target Cortico 0.2.1 and provider contract 6.
 - Rename browser contributions, imports and bundles to WebUI.
