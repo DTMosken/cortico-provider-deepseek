@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Identify peak/off-peak pricing in the provider title and all four reasoning tiers in its descriptions.
+- Correct the README requirement to provider contract 6.
+
 ## 0.2.0 - 2026-10-16
 
 - Target Cortico 0.2.1 and provider contract 6.

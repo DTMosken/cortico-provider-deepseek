@@ -11,8 +11,8 @@
       "text",
       "image"
     ],
-    "title": "DeepSeek",
-    "description": "DeepSeek Responses API.",
+    "title": "DeepSeek（峰谷计价）",
+    "description": "DeepSeek Responses API，支持峰谷计价与关闭、低、高、最大四档思考。",
     "reasoningTiers": [
       {
         "id": "high",

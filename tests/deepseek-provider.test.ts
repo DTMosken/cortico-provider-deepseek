@@ -31,9 +31,14 @@ function costAt(startedAt: string, model = 'deepseek-flash'): number | null {
   return chargeAt(startedAt, model)?.amount ?? null;
 }
 describe('DeepSeek provider module', () => {
- it.each(['zh', 'en', 'zh-Hant', 'ja'])('keeps its provider title in %s', (locale) => {
+ it.each([
+  ['zh', 'DeepSeek（峰谷计价）'], ['zh-Hant', 'DeepSeek（峰谷计价）'],
+  ['en', 'DeepSeek (peak/off-peak pricing)'], ['ja', 'DeepSeek (peak/off-peak pricing)'],
+ ])('identifies its pricing support in %s', (locale, title) => {
   const localized = deepseekProvider.localize?.(languageOfLocale(locale)!);
-  expect(localized?.title).toBe(deepseekProvider.title);
+  expect(localized?.title).toBe(title);
+  const labels = localized?.reasoningTiers?.map(({ label }) => label) ?? [];
+  for (const label of labels) expect(localized?.description).toContain(label);
  });
 
  it('ships every panel declared by its WebUI contribution', async () => {

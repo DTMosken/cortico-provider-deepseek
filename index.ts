@@ -26,8 +26,8 @@ const reasoningTiers = (language: Language): ReasoningTier[] => {
 export const DEEPSEEK_PROVIDER: ProviderModule = {
   ...responsesCompat,
   id: 'deepseek',
-  title: 'DeepSeek',
-  description: 'DeepSeek Responses API.',
+  title: 'DeepSeek（峰谷计价）',
+  description: 'DeepSeek Responses API，支持峰谷计价与关闭、低、高、最大四档思考。',
   describe: { protocols: ['openai-responses'], auth: ['api-key'], local: false, input: ['text', 'image'] },
   defaultBaseUrl: 'https://api.deepseek.com',
   baseUrlSuggestions: ['https://api.deepseek.com'],
@@ -35,7 +35,11 @@ export const DEEPSEEK_PROVIDER: ProviderModule = {
   reasoningTiers: reasoningTiers('zh'),
   localize: (language) => ({
     ...responsesCompat.localize?.(language),
-    title: 'DeepSeek',
+    title: pick(language, { zh: 'DeepSeek（峰谷计价）', en: 'DeepSeek (peak/off-peak pricing)' }),
+    description: pick(language, {
+      zh: 'DeepSeek Responses API，支持峰谷计价与关闭、低、高、最大四档思考。',
+      en: 'DeepSeek Responses API with peak/off-peak pricing and Off, Low, High and Max reasoning tiers.',
+    }),
     reasoningTiers: reasoningTiers(language),
   }),
   normalize(entry) {

@@ -2,11 +2,11 @@
 
 # cortico-provider-deepseek
 
-`cortico-provider-deepseek` 是 Cortico 的 DeepSeek 模型供应商扩展，使用 DeepSeek Responses API。
+`cortico-provider-deepseek` 是 Cortico 的 DeepSeek 模型供应商扩展，使用 DeepSeek Responses API，在内置 Responses Compatible 基础上提供峰谷计价与关闭、低、高、最大四档思考。
 
 ## 安装
 
-要求 Cortico 模型供应商扩展 API 5。在 Cortico 仓库的 `extensions/` 目录安装：
+要求 Cortico 模型供应商扩展 API 6。在 Cortico 仓库的 `extensions/` 目录安装：
 
 ```powershell
 Set-Location "<Cortico 仓库路径>\extensions"
