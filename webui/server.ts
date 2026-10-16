@@ -1,5 +1,5 @@
-import type { ConsolePageContribution } from 'cortico/web/shared/console-protocol.ts';
-import type { ProviderConsoleHost } from 'cortico/providers/console/types.ts';
+import type { WebUiPageContribution } from 'cortico/web/shared/webui-protocol.ts';
+import type { ProviderWebUiHost } from 'cortico/providers/webui/types.ts';
 import type { LLMProviderEntry } from 'cortico/core/types.ts';
 import responsesCompat from 'cortico/providers/openai-responses-compat/index.ts';
 import { validatePrices } from 'cortico/providers/pricebook.ts';
@@ -12,8 +12,8 @@ function instanceName(args: unknown[], required: string): string {
   return (raw as { name: string }).name;
 }
 
-export function deepseekPricingConsole(host: ProviderConsoleHost): Partial<ConsolePageContribution> {
-  const base = responsesCompat.console?.(host) ?? {};
+export function deepseekPricingWebUi(host: ProviderWebUiHost): Partial<WebUiPageContribution> {
+  const base = responsesCompat.webUi?.(host) ?? {};
   const labels = pick(host.language, {
     zh: { title: '峰谷计价', description: '查看人民币单价、当前时段并调整峰时段与例外日期。', pricing: '成本与计价', pricingDescription: 'DeepSeek 官方价目与端点自定义报价。', required: '需要端点名', unknownMethod: '未知方法' },
     en: { title: 'Peak/off-peak pricing', description: 'View CNY rates, the active band, and edit peak hours and exception dates.', pricing: 'Cost and pricing', pricingDescription: 'DeepSeek official rates and endpoint-specific overrides.', required: 'Endpoint name required', unknownMethod: 'Unknown method' },

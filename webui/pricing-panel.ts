@@ -1,6 +1,6 @@
-import type { ConsolePanel, ConsolePanelContext } from 'cortico/web/shared/client-panel.ts';
+import type { WebUiPanel, WebUiPanelContext } from 'cortico/web/shared/client-panel.ts';
 import { pick } from 'cortico/core/language.ts';
-import { pricingEditor } from 'cortico/web/client/console-pages/builtins/llm-settings/pricing-panel.ts';
+import { pricingEditor } from 'cortico/web/client/webui-pages/builtins/llm-settings/pricing-panel.ts';
 import { currentPricingBand, type DeepSeekPricingSchedule } from '../pricing.ts';
 import type { PriceDefinition } from 'cortico/providers/pricebook.ts';
 
@@ -15,8 +15,8 @@ interface PricingState {
 
 interface PricingInstance { name: string }
 
-export const pricingPanel: ConsolePanel = {
-  mount: async (ctx: ConsolePanelContext) => {
+export const pricingPanel: WebUiPanel = {
+  mount: async (ctx: WebUiPanelContext) => {
     const S = pick(ctx.language, { zh: {
       title: 'DeepSeek 官方价目', current: '当前计价档位', peak: '高峰', offPeak: '空闲', model: '模型',
       meter: '用量', cached: '输入（缓存命中）', uncached: '输入（缓存未命中）', output: '输出',

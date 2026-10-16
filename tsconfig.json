@@ -15,6 +15,6 @@
     "noEmit": true,
     "paths": { "cortico/*": ["../Cortico/src/*"] }
   },
-  "include": ["index.ts", "pricing.ts", "console/**/*.ts", "tests/**/*.ts", "../Cortico/src/worlds/minecraft/pathfinder-lib.d.ts"],
+  "include": ["index.ts", "pricing.ts", "webui/**/*.ts", "tests/**/*.ts", "../Cortico/src/worlds/minecraft/pathfinder-lib.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

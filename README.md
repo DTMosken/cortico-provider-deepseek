@@ -1,4 +1,4 @@
-<!-- Owner: index.ts, pricing.ts, console/client.ts, console/server.ts, console/schedule-panel.ts, console/pricing-panel.ts, scripts/migrate-rmb-currency.mjs, package.json -->
+<!-- Owner: index.ts, pricing.ts, webui/client.ts, webui/server.ts, webui/schedule-panel.ts, webui/pricing-panel.ts, scripts/migrate-rmb-currency.mjs, package.json -->
 
 # cortico-provider-deepseek
 
@@ -19,7 +19,7 @@ corepack pnpm add --ignore-workspace cortico-provider-deepseek
 
 插件为 `deepseek-flash` 提供人民币模块价目。“成本与计价”面板显示峰谷单价和当前计价档位。端点自定义报价可按模型覆盖模块价目；未设置时使用模块价目。
 
-人民币报价使用 `CNY`。已有自定义报价中的 `RMB` 在读取和保存时转换为 `CNY`，单价保持不变。Cortico 0.1.11 的用量报告可按 `usage.rates.CNY` 换算这些费用。
+人民币报价使用 `CNY`。已有自定义报价中的 `RMB` 在读取和保存时转换为 `CNY`，单价保持不变。Cortico 的用量报告可按 `usage.rates.CNY` 换算这些费用。
 
 控制台的 `zh-Hant` 使用中文回退文案；其他未提供翻译的语言使用英文。
 
@@ -58,3 +58,7 @@ node scripts/migrate-rmb-currency.mjs --write "<部署路径>/data/usage.jsonl" 
 项目采用 MIT License，详见 [LICENSE](LICENSE)。
 
 部分代码源自 Phantivia 编写的 Cortico `src/providers/openai-responses-compat/`。新增和修改部分由 DTMosken 编写；LICENSE 保留上游版权声明。
+
+## Cortico 0.2.1
+
+发布前从 Cortico 仓库运行 `pnpm describe:extension <本包目录>` 和 `pnpm check:extension <本包目录>`。协议、登录方式与输入能力通过 `describe.json` 提供给扩展市场；发布规则见 [AGENTS.md](AGENTS.md)，更新说明见 [CHANGELOG.md](CHANGELOG.md)。

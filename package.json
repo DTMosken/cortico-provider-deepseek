@@ -15,26 +15,32 @@
   "files": [
     "index.ts",
     "pricing.ts",
-    "console",
+    "webui",
     "dist",
     "scripts/migrate-rmb-currency.mjs",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "describe.json",
+    "CHANGELOG.md",
+    "AGENTS.md",
+    "CLAUDE.md"
   ],
   "scripts": {
-    "build:console": "esbuild console/client.ts --bundle --format=esm --outfile=dist/console.js",
+    "build:webui": "esbuild webui/client.ts --bundle --format=esm --outfile=dist/webui.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "migrate:currency": "node scripts/migrate-rmb-currency.mjs"
   },
   "cortico": {
     "kind": "provider",
-    "api": 5,
-    "consoleClient": "dist/console.js"
+    "api": 6,
+    "webUiClient": "dist/webui.js",
+    "tags": [],
+    "describe": "describe.json"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "cortico": "^0.1.11",
+    "cortico": "^0.2.1",
     "esbuild": "^0.28.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

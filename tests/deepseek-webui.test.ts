@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import type { ProviderConsoleHost } from 'cortico/providers/console/types.ts';
+import type { ProviderWebUiHost } from 'cortico/providers/webui/types.ts';
 import type { LLMProviderEntry } from 'cortico/core/types.ts';
 import deepseekProvider from '../index.ts';
 import { languageOfLocale, type Language } from 'cortico/core/language.ts';
 
 const JSDOM_MODULE = new URL('../../Cortico/node_modules/jsdom/lib/api.js', import.meta.url).href;
 const UI_MODULE = '../../Cortico/src/web/client/ui/index.ts';
-const PRICING_MODULE = '../console/pricing-panel.ts';
-const SCHEDULE_MODULE = '../console/schedule-panel.ts';
+const PRICING_MODULE = '../webui/pricing-panel.ts';
+const SCHEDULE_MODULE = '../webui/schedule-panel.ts';
 const { JSDOM } = await import(JSDOM_MODULE) as {
   JSDOM: new (html: string, options: { url: string }) => { window: { document: any; AbortController: typeof AbortController } };
 };
-const { createConsoleUi } = await import(UI_MODULE);
+const { createWebUi } = await import(UI_MODULE);
 const { pricingPanel } = await import(PRICING_MODULE);
 const { schedulePanel } = await import(SCHEDULE_MODULE);
 
@@ -20,14 +20,14 @@ function panelContext(panelId: 'pricing' | 'schedule', language: Language = 'zh'
   const controller = new window.AbortController();
   const root = window.document.querySelector('.connection-step');
   const entry: LLMProviderEntry = { kind: 'deepseek', baseUrl: 'https://api.deepseek.com' };
-  const host: ProviderConsoleHost = {
+  const host: ProviderWebUiHost = {
     language, editing: true,
     entries: () => [{ name: 'main', entry }],
     instance: () => ({ client: {} as never }),
     save: () => {},
   };
-  const contribution = deepseekProvider.console!(host);
-  const ui = createConsoleUi({
+  const contribution = deepseekProvider.webUi!(host);
+  const ui = createWebUi({
     doc: window.document, overlayHost: window.document.body, signal: controller.signal,
     memo: { get: <T>(_key: string, fallback: T): T => fallback, set: () => {} },
   });

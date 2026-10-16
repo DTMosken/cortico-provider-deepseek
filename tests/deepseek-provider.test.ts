@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import deepseekProvider from '../index.ts';
 import { currentPricingBand, defaultPricingSchedule, parsePricingSchedule } from '../pricing.ts';
-import type { ProviderConsoleHost } from 'cortico/providers/console/types.ts';
+import type { ProviderWebUiHost } from 'cortico/providers/webui/types.ts';
 import { build } from 'esbuild';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,7 +12,7 @@ import { priceUsage } from 'cortico/core/generation.ts';
 import { nullLogger } from 'cortico/core/util.ts';
 import { validateEntry } from 'cortico/providers/configuration.ts';
 import { languageOfLocale } from 'cortico/core/language.ts';
-import { parseExtensionManifest } from 'cortico/extensions/manifest.ts';
+import { EXTENSION_API_VERSIONS, parseExtensionManifest } from 'cortico/extensions/manifest.ts';
 import { extensionAssetUrl } from 'cortico/extensions/manifest.ts';
 import { quotePrices } from 'cortico/providers/pricebook.ts';
 import { ResponsesProvider } from 'cortico/providers/openai-responses-compat/native.ts';
@@ -36,16 +36,16 @@ describe('DeepSeek provider module', () => {
   expect(localized?.title).toBe(deepseekProvider.title);
  });
 
- it('ships every panel declared by its console contribution', async () => {
+ it('ships every panel declared by its WebUI contribution', async () => {
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-  expect(pkg.cortico.consoleClient).toBe('dist/console.js');
-  expect(pkg.files).toEqual(expect.arrayContaining(['console', 'dist']));
-  expect(pkg.scripts['build:console']).toBeTruthy();
+  expect(pkg.cortico.webUiClient).toBe('dist/webui.js');
+  expect(pkg.files).toEqual(expect.arrayContaining(['webui', 'dist']));
+  expect(pkg.scripts['build:webui']).toBeTruthy();
   const outDir = mkdtempSync(join(tmpdir(), 'deepseek-console-test-'));
   try {
    const outfile = join(outDir, 'console.mjs');
    await build({
-    entryPoints: [fileURLToPath(new URL('../console/client.ts', import.meta.url))],
+    entryPoints: [fileURLToPath(new URL('../webui/client.ts', import.meta.url))],
     bundle: true, format: 'esm', outfile,
    });
    const bundle = (await import(pathToFileURL(outfile).href)).default;
@@ -104,13 +104,13 @@ describe('DeepSeek provider module', () => {
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   expect(deepseekProvider.id).toBe('deepseek');
   expect(deepseekProvider.defaultBaseUrl).toBe('https://api.deepseek.com');
-  expect(parseExtensionManifest(pkg)).toMatchObject({ ok: true, manifest: { kind: 'provider', api: 5 } });
+  expect(parseExtensionManifest(pkg)).toMatchObject({ ok: true, manifest: { kind: 'provider', api: EXTENSION_API_VERSIONS.provider } });
   expect(pkg.files).toContain('pricing.ts');
  });
  it('uses a new immutable asset URL for the bundle that adds pricing controls', () => {
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-  expect(extensionAssetUrl(pkg.name, pkg.version, 'console.js')).not.toBe(
-   extensionAssetUrl(pkg.name, '0.1.2', 'console.js'),
+  expect(extensionAssetUrl(pkg.name, pkg.version, 'webui.js')).not.toBe(
+   extensionAssetUrl(pkg.name, '0.1.2', 'webui.js'),
   );
  });
  it('reuses the Responses client and model catalog', () => {
@@ -152,13 +152,13 @@ describe('DeepSeek provider module', () => {
  });
  it('exposes the plugin-owned schedule panel alongside the inherited pricing and reasoning panels', async () => {
   let saved: LLMProviderEntry | undefined;
-  const host: ProviderConsoleHost = {
+  const host: ProviderWebUiHost = {
    language: 'zh', editing: true,
    entries: () => [{ name: 'main', entry }],
    instance: () => ({ client: {} as never }),
    save: (_name, next) => { saved = next; },
   };
-  const contribution = deepseekProvider.console?.(host);
+  const contribution = deepseekProvider.webUi?.(host);
   expect(contribution?.panels?.map(({ id }) => id)).toContain('schedule');
   expect(contribution?.panels?.map(({ id }) => id)).toContain('reasoning');
   const state = await contribution?.invoke?.('schedule', 'state', [{ name: 'main' }]) as { schedule: unknown };
@@ -169,13 +169,13 @@ describe('DeepSeek provider module', () => {
  });
  it('replaces the generic price editor with a DeepSeek price panel and stages explicit quotes', async () => {
   let saved: LLMProviderEntry | undefined;
-  const host: ProviderConsoleHost = {
+  const host: ProviderWebUiHost = {
    language: 'zh', editing: true,
    entries: () => [{ name: 'main', entry }],
    instance: () => ({ client: {} as never }),
    save: (_name, next) => { saved = next; },
   };
-  const contribution = deepseekProvider.console?.(host);
+  const contribution = deepseekProvider.webUi?.(host);
   const pricingPanel = contribution?.panels?.find(({ id }) => id === 'pricing');
   expect(pricingPanel).toMatchObject({ id: 'pricing', title: '成本与计价' });
   expect(pricingPanel).not.toHaveProperty('builtin');
@@ -189,7 +189,7 @@ describe('DeepSeek provider module', () => {
   ]);
   expect(state.custom).toEqual([]);
   await contribution?.invoke?.('pricing', 'save', [{ name: 'main', pricing: [{
-   models: ['*'], currency: 'RMB', basis: 'marginal', source: 'console',
+   models: ['*'], currency: 'RMB', basis: 'marginal', source: 'webui',
    rules: [{ meter: 'cachedInput', perMillion: 0.5 }, { meter: 'uncachedInput', perMillion: 3 }, { meter: 'output', perMillion: 9 }],
   }] }]);
   expect(saved?.pricing?.[0].rules).toEqual([
@@ -210,7 +210,7 @@ describe('DeepSeek provider module', () => {
   const charges = priceUsage(meters, quotePrices(normalized, request, at, deepseekProvider.prices!(normalized, request, at)));
   expect(charges.map(charge => [charge.quote.currency, charge.amount])).toEqual([['CNY', 9], ['USD', 2]]);
   expect(configured.pricing?.[0].currency).toBe('RMB');
-  const contribution = deepseekProvider.console!({
+  const contribution = deepseekProvider.webUi!({
    language: languageOfLocale('zh-Hant')!, editing: true,
    entries: () => [{ name: 'main', entry: configured }],
    instance: () => ({ client: {} as never }), save: () => {},

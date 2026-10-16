@@ -3,7 +3,7 @@ import type { ReasoningTier } from 'cortico/core/types.ts';
 import { pick, type Language } from 'cortico/core/language.ts';
 import responsesCompat from 'cortico/providers/openai-responses-compat/index.ts';
 import { normalizePricing, pricesForSchedule } from './pricing.ts';
-import { deepseekPricingConsole } from './console/server.ts';
+import { deepseekPricingWebUi } from './webui/server.ts';
 
 const DEFAULT_MODEL = 'deepseek-flash';
 const LEGACY_EFFORTS: Record<string, string> = {
@@ -28,9 +28,10 @@ export const DEEPSEEK_PROVIDER: ProviderModule = {
   id: 'deepseek',
   title: 'DeepSeek',
   description: 'DeepSeek Responses API.',
+  describe: { protocols: ['openai-responses'], auth: ['api-key'], local: false, input: ['text', 'image'] },
   defaultBaseUrl: 'https://api.deepseek.com',
   baseUrlSuggestions: ['https://api.deepseek.com'],
-  console: deepseekPricingConsole,
+  webUi: deepseekPricingWebUi,
   reasoningTiers: reasoningTiers('zh'),
   localize: (language) => ({
     ...responsesCompat.localize?.(language),

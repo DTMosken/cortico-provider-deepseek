@@ -1,4 +1,4 @@
-import type { ConsolePanel, ConsolePanelContext } from 'cortico/web/shared/client-panel.ts';
+import type { WebUiPanel, WebUiPanelContext } from 'cortico/web/shared/client-panel.ts';
 import { pick } from 'cortico/core/language.ts';
 import { currentPricingBand, type DeepSeekPricingSchedule } from '../pricing.ts';
 
@@ -8,8 +8,8 @@ interface ScheduleState {
   band: 'peak' | 'offPeak';
 }
 
-export const schedulePanel: ConsolePanel = {
-  mount: async (ctx: ConsolePanelContext) => {
+export const schedulePanel: WebUiPanel = {
+  mount: async (ctx: WebUiPanelContext) => {
     const S = pick(ctx.language, { zh: {
       current: '当前计价时段', peak: '高峰', offPeak: '空闲', timezone: '北京时间（Asia/Shanghai）',
       windows: '高峰时段', weekday: '周一至周五；周末始终为空闲时段', exceptions: '例外日期（每行 YYYY-MM-DD）',
