@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 - 2026-10-17
 
 - Identify peak/off-peak pricing in the provider title and all four reasoning tiers in its descriptions.
 - Correct the README requirement to provider contract 6.
