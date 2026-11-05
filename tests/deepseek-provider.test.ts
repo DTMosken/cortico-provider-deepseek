@@ -54,10 +54,12 @@ describe('DeepSeek provider module', () => {
     bundle: true, format: 'esm', outfile,
    });
    const bundle = (await import(pathToFileURL(outfile).href)).default;
-   expect(Object.keys(bundle.panels)).toEqual(['reasoning', 'schedule', 'pricing']);
-   expect(typeof bundle.panels.reasoning.mount).toBe('function');
-   expect(typeof bundle.panels.schedule.mount).toBe('function');
-   expect(typeof bundle.panels.pricing.mount).toBe('function');
+   const contribution = deepseekProvider.webUi!({
+    language: 'en', entries: () => [], instance: () => ({ client: {} as never }), save() {},
+   });
+   for (const panel of contribution.panels ?? []) {
+    if (!panel.builtin) expect(typeof bundle.panels[panel.id].mount).toBe('function');
+   }
   } finally {
    rmSync(outDir, { recursive: true, force: true });
   }
@@ -172,37 +174,23 @@ describe('DeepSeek provider module', () => {
   expect(saved?.options?.deepseekPricingSchedule).toContain('08:00');
   expect(updated.schedule).toMatchObject({ windows: [{ from: '08:00', to: '10:00' }, { from: '15:00', to: '17:00' }] });
  });
- it('replaces the generic price editor with a DeepSeek price panel and stages explicit quotes', async () => {
-  let saved: LLMProviderEntry | undefined;
+ it('keeps the Core quote editor beside the official price panel', async () => {
   const host: ProviderWebUiHost = {
    language: 'zh', editing: true,
    entries: () => [{ name: 'main', entry }],
    instance: () => ({ client: {} as never }),
-   save: (_name, next) => { saved = next; },
+   save: () => {},
   };
   const contribution = deepseekProvider.webUi?.(host);
-  const pricingPanel = contribution?.panels?.find(({ id }) => id === 'pricing');
-  expect(pricingPanel).toMatchObject({ id: 'pricing', title: '成本与计价' });
-  expect(pricingPanel).not.toHaveProperty('builtin');
-  const state = await contribution?.invoke?.('pricing', 'state', [{ name: 'main' }]) as { official: { rules: Array<{ meter: string; perMillion: number }> }; custom: unknown[] };
-  expect(await contribution?.invoke?.('pricing', 'instances', [])).toEqual([{ name: 'main' }]);
-  expect((await contribution?.invoke?.('pricing', 'state', [{ name: 'main' }]) as { editing: boolean }).editing).toBe(true);
+  expect(contribution?.panels?.find(({ id }) => id === 'pricing')?.builtin).toBe('connection-pricing');
+  expect(contribution?.panels?.find(({ id }) => id === 'official-pricing')).toMatchObject({ title: 'DeepSeek 官方价目' });
+  const state = await contribution?.invoke?.('official-pricing', 'state', [{ name: 'main' }]) as { official: { rules: Array<{ meter: string; perMillion: number }> } };
+  expect(await contribution?.invoke?.('official-pricing', 'instances', [])).toEqual([{ name: 'main' }]);
   expect(state.official.rules).toEqual([
    { meter: 'cachedInput', perMillion: 0.02 },
    { meter: 'uncachedInput', perMillion: 1 },
    { meter: 'output', perMillion: 4 },
   ]);
-  expect(state.custom).toEqual([]);
-  await contribution?.invoke?.('pricing', 'save', [{ name: 'main', pricing: [{
-   models: ['*'], currency: 'RMB', basis: 'marginal', source: 'webui',
-   rules: [{ meter: 'cachedInput', perMillion: 0.5 }, { meter: 'uncachedInput', perMillion: 3 }, { meter: 'output', perMillion: 9 }],
-  }] }]);
-  expect(saved?.pricing?.[0].rules).toEqual([
-   { meter: 'cachedInput', perMillion: 0.5 },
-   { meter: 'uncachedInput', perMillion: 3 },
-   { meter: 'output', perMillion: 9 },
-  ]);
-  expect(saved?.pricing?.[0].currency).toBe('CNY');
  });
  it('normalizes custom RMB quotes before pricing without changing their rates or the input entry', async () => {
   const configured: LLMProviderEntry = { ...entry, pricing: [
@@ -215,14 +203,6 @@ describe('DeepSeek provider module', () => {
   const charges = priceUsage(meters, quotePrices(normalized, request, at, deepseekProvider.prices!(normalized, request, at)));
   expect(charges.map(charge => [charge.quote.currency, charge.amount])).toEqual([['CNY', 9], ['USD', 2]]);
   expect(configured.pricing?.[0].currency).toBe('RMB');
-  const contribution = deepseekProvider.webUi!({
-   language: languageOfLocale('zh-Hant')!, editing: true,
-   entries: () => [{ name: 'main', entry: configured }],
-   instance: () => ({ client: {} as never }), save: () => {},
-  });
-  expect(contribution.panels?.find(panel => panel.id === 'pricing')?.title).toBe('成本与计价');
-  const state = await contribution.invoke!('pricing', 'state', [{ name: 'main' }]) as { custom: Array<{ currency: string }> };
-  expect(state.custom.map(price => price.currency)).toEqual(['CNY', 'USD']);
  });
   it('applies half-open windows in Shanghai time', () => {
   const cases: Array<[string, number]> = [

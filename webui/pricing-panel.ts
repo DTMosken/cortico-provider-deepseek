@@ -1,6 +1,5 @@
 import type { WebUiPanel, WebUiPanelContext } from 'cortico/web/shared/client-panel.ts';
 import { pick } from 'cortico/core/language.ts';
-import { pricingEditor } from 'cortico/web/client/webui-pages/builtins/llm-settings/pricing-panel.ts';
 import { currentPricingBand, type DeepSeekPricingSchedule } from '../pricing.ts';
 import type { PriceDefinition } from 'cortico/providers/pricebook.ts';
 
@@ -9,8 +8,6 @@ interface PricingState {
   schedule: DeepSeekPricingSchedule;
   band: 'peak' | 'offPeak';
   official: PriceDefinition;
-  custom: unknown[];
-  editing: boolean;
 }
 
 interface PricingInstance { name: string }
@@ -20,15 +17,11 @@ export const pricingPanel: WebUiPanel = {
     const S = pick(ctx.language, { zh: {
       title: 'DeepSeek 官方价目', current: '当前计价档位', peak: '高峰', offPeak: '空闲', model: '模型',
       meter: '用量', cached: '输入（缓存命中）', uncached: '输入（缓存未命中）', output: '输出',
-      custom: '端点自定义报价', customOn: '已设置覆盖', fallback: '未设置，使用模块价目',
-      save: '应用报价', saved: '报价已写入连接草稿；保存连接后生效', savedNow: '报价已保存',
       choose: 'DeepSeek 端点',
       loadError: '无法读取价目', noInstances: '没有可用的 DeepSeek 端点',
     }, en: {
       title: 'DeepSeek official rates', current: 'Active pricing band', peak: 'Peak', offPeak: 'Off-peak', model: 'Model',
       meter: 'Usage', cached: 'Input (cache hit)', uncached: 'Input (cache miss)', output: 'Output',
-      custom: 'Endpoint-specific quote', customOn: 'Override configured', fallback: 'Unset; using module rates',
-      save: 'Apply quote', saved: 'Quote staged; save the connection to apply it', savedNow: 'Quote saved',
       choose: 'DeepSeek endpoint',
       loadError: 'Unable to load rates', noInstances: 'No DeepSeek endpoints are available',
     } });
@@ -99,32 +92,10 @@ export const pricingPanel: WebUiPanel = {
       }
       card.body.append(table.el, ctx.ui.msgline(`${state.official.source} · Asia/Shanghai`));
 
-      const details = ctx.ui.foldSheet('deepseek-custom-pricing', { title: S.custom });
-      details.el.classList.add('deepseek-custom-pricing');
-      details.note.textContent = state.custom.length ? S.customOn : S.fallback;
-      let customPricing = state.custom;
-      const editor = pricingEditor(ctx.ui, state.custom, [], (value) => { customPricing = value; }, ctx.language);
-      details.body.append(editor.body);
-      const save = ctx.ui.button(S.save, { variant: 'primary', onClick: () => void savePricing() });
-      details.body.append(ctx.ui.actions().appendChild(save));
-      card.body.append(details.el);
       if (currentCard) currentCard.replaceWith(card.el);
       else ctx.root.insertBefore(card.el, message);
       currentCard = card.el;
 
-      async function savePricing(): Promise<void> {
-        if (!editor.validate()) return;
-        const release = ctx.ui.disable(save);
-        try {
-          const updated = await ctx.invoke<PricingState>('save', [{ name: state.name, pricing: customPricing }]);
-          message.textContent = updated.editing ? S.saved : S.savedNow;
-          render(updated);
-        } catch (error) {
-          message.textContent = String(error);
-        } finally {
-          release.dispose();
-        }
-      }
     }
   },
 };

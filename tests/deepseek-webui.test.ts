@@ -4,8 +4,8 @@ import type { LLMProviderEntry } from 'cortico/core/types.ts';
 import deepseekProvider from '../index.ts';
 import { languageOfLocale, type Language } from 'cortico/core/language.ts';
 
-const JSDOM_MODULE = new URL('../../Cortico/node_modules/jsdom/lib/api.js', import.meta.url).href;
-const UI_MODULE = '../../Cortico/src/web/client/ui/index.ts';
+const JSDOM_MODULE = 'jsdom';
+const UI_MODULE = 'cortico/web/client/ui/index.ts';
 const PRICING_MODULE = '../webui/pricing-panel.ts';
 const SCHEDULE_MODULE = '../webui/schedule-panel.ts';
 const { JSDOM } = await import(JSDOM_MODULE) as {
@@ -15,7 +15,7 @@ const { createWebUi } = await import(UI_MODULE);
 const { pricingPanel } = await import(PRICING_MODULE);
 const { schedulePanel } = await import(SCHEDULE_MODULE);
 
-function panelContext(panelId: 'pricing' | 'schedule', language: Language = 'zh') {
+function panelContext(panelId: 'official-pricing' | 'schedule', language: Language = 'zh') {
   const { window } = new JSDOM('<!doctype html><body><div class="connection-step"></div></body>', { url: 'http://localhost' });
   const controller = new window.AbortController();
   const root = window.document.querySelector('.connection-step');
@@ -44,7 +44,7 @@ describe('DeepSeek connection panels', () => {
     ['en', 'DeepSeek official rates', 'Active pricing band', 'Window 1'],
     ['ja', 'DeepSeek official rates', 'Active pricing band', 'Window 1'],
   ])('renders %s through its Chinese or English fallback', async (locale, pricingTitle, scheduleTitle, windowLabel) => {
-    const pricing = panelContext('pricing', languageOfLocale(locale)!);
+    const pricing = panelContext('official-pricing', languageOfLocale(locale)!);
     await pricingPanel.mount(pricing);
     expect(pricing.root.textContent).toContain(pricingTitle);
     const schedule = panelContext('schedule', languageOfLocale(locale)!);
@@ -52,14 +52,15 @@ describe('DeepSeek connection panels', () => {
     expect(schedule.root.textContent).toContain(scheduleTitle);
     expect(schedule.root.textContent).toContain(windowLabel);
   });
-  it('shows the collapsed endpoint quote editor inside the official pricing card', async () => {
-    const ctx = panelContext('pricing');
+  it('shows both official pricing bands without a second quote editor', async () => {
+    const ctx = panelContext('official-pricing');
     await pricingPanel.mount(ctx);
-    const custom = ctx.root.querySelector('details.deepseek-custom-pricing');
-    expect(custom).not.toBeNull();
-    expect(custom?.open).toBe(false);
-    expect(custom?.textContent).toContain('端点自定义报价');
-    expect(custom?.querySelectorAll('input[type="number"]')).toHaveLength(3);
+    const rates = ctx.root.querySelector('table');
+    expect(rates.textContent).toContain('高峰');
+    expect(rates.textContent).toContain('空闲');
+    expect(rates.textContent).toContain('¥0.04');
+    expect(rates.textContent).toContain('¥0.02');
+    expect(ctx.root.querySelectorAll('input')).toHaveLength(0);
   });
 
   it('keeps the schedule in one foldable step with both windows on one row', async () => {

@@ -1,6 +1,6 @@
 {
   "name": "cortico-provider-deepseek",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Cortico 的 DeepSeek Responses API 模型供应商扩展，支持峰谷计价与关闭、低、高、最大四档思考。",
   "license": "MIT",
@@ -40,8 +40,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "cortico": "^0.2.1",
+    "cortico": "0.2.13",
     "esbuild": "^0.28.2",
+    "jsdom": "^30.0.1",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },

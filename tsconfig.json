@@ -12,9 +12,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "noEmit": true,
-    "paths": { "cortico/*": ["../Cortico/src/*"] }
+    "noEmit": true
   },
-  "include": ["index.ts", "pricing.ts", "webui/**/*.ts", "tests/**/*.ts", "../Cortico/src/worlds/minecraft/pathfinder-lib.d.ts"],
+  "include": ["index.ts", "pricing.ts", "webui/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -5,5 +5,5 @@ import { schedulePanel } from './schedule-panel.ts';
 
 export default {
   ...compat,
-  panels: { ...compat.panels, schedule: schedulePanel, pricing: pricingPanel },
+  panels: { ...compat.panels, schedule: schedulePanel, 'official-pricing': pricingPanel },
 } satisfies WebUiClientBundle;

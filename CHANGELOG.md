@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 - 2026-11-05
+
+- Support Cortico 0.2.13. Use its built-in connection pricing editor for custom quotes and keep official peak/off-peak rates in a separate panel.
+- Pin development checks and WebUI builds to Cortico 0.2.13 without a sibling checkout.
+
 ## 0.2.1 - 2026-10-17
 
 - Identify peak/off-peak pricing in the provider title and all four reasoning tiers in its descriptions.

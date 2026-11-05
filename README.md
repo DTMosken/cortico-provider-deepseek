@@ -6,7 +6,7 @@
 
 ## 安装
 
-要求 Cortico 模型供应商扩展 API 6。在 Cortico 仓库的 `extensions/` 目录安装：
+要求 Cortico 0.2.13 或以上版本，模型供应商扩展 API 6。在 Cortico 仓库的 `extensions/` 目录安装：
 
 ```powershell
 Set-Location "<Cortico 仓库路径>\extensions"
@@ -17,7 +17,7 @@ corepack pnpm add --ignore-workspace cortico-provider-deepseek
 
 ## 成本与计价
 
-插件为 `deepseek-flash` 提供人民币模块价目。“成本与计价”面板显示峰谷单价和当前计价档位。端点自定义报价可按模型覆盖模块价目；未设置时使用模块价目。
+插件为 `deepseek-flash` 提供人民币模块价目。“DeepSeek 官方价目”面板显示峰谷单价和当前计价档位。端点自定义报价在 Core 的报价编辑区设置，可按模型覆盖模块价目；未设置时使用模块价目。编辑后保存端点生效。
 
 人民币报价使用 `CNY`。已有自定义报价中的 `RMB` 在读取和保存时转换为 `CNY`，单价保持不变。Cortico 的用量报告可按 `usage.rates.CNY` 换算这些费用。
 
@@ -59,6 +59,8 @@ node scripts/migrate-rmb-currency.mjs --write "<部署路径>/data/usage.jsonl" 
 
 部分代码源自 Phantivia 编写的 Cortico `src/providers/openai-responses-compat/`。新增和修改部分由 DTMosken 编写；LICENSE 保留上游版权声明。
 
-## Cortico 0.2.1
+## 开发
+
+`pnpm install` 安装固定的 Cortico 0.2.13 开发依赖。`pnpm test`、`pnpm typecheck` 与 `pnpm build:webui` 使用这份依赖。
 
 发布前从 Cortico 仓库运行 `pnpm describe:extension <本包目录>` 和 `pnpm check:extension <本包目录>`。协议、登录方式与输入能力通过 `describe.json` 提供给扩展市场；发布规则见 [AGENTS.md](AGENTS.md)，更新说明见 [CHANGELOG.md](CHANGELOG.md)。
