@@ -4,9 +4,9 @@
 
 ## 检查环境
 
-工作流在 GitHub 托管的 Ubuntu runner 上使用 Node 24 和 `package.json` 声明的 pnpm 版本。Cortico 检查基线由 `release.yml` 中的 `CORTICO_REF` 指定，用于类型、控制台 UI、测试夹具与扩展检查。
+工作流在 GitHub 托管的 Ubuntu runner 上使用 Node 24 和 `package.json` 声明的 pnpm 版本。类型检查、测试和 WebUI 构建使用包内的 Cortico 开发依赖；扩展检查与发布文件审计使用 `release.yml` 中 `CORTICO_REF` 指定的 Core 0.2.13 源码。
 
-两个仓库按以下目录关系检出；本地运行相同检查也使用这个关系：
+工作流按以下目录关系检出两个仓库：
 
 ```text
 <父目录>/
@@ -14,11 +14,11 @@
   <扩展仓库>/
 ```
 
-两个目录各自执行 `pnpm install --frozen-lockfile`。本地开发直接使用两个仓库的实际目录。
+两个目录各自执行 `pnpm install --frozen-lockfile`。本地运行包内测试、类型检查和构建不需要相邻的 Cortico checkout。
 
 ## 发布
 
-在 GitHub 的 Actions 页面选择 Release，选定分支与版本增量后点击 Run workflow。工作流更新版本与源码地址，执行测试、类型检查、console 构建和扩展检查，审计文件并生成 npm tarball。检查通过后，只提交 `package.json`，创建 `v<版本>` 标签，并将提交和标签一起推送到选定分支。
+在 GitHub 的 Actions 页面选择 Release，选定分支与版本增量后点击 Run workflow。工作流更新版本与源码地址，执行测试、类型检查、WebUI 构建和扩展检查，审计文件并生成 npm tarball。检查通过后，只提交 `package.json`，创建 `v<版本>` 标签，并将提交和标签一起推送到选定分支。
 
 发布使用 npm Trusted Publishing。npm 包的 Trusted Publisher 设置须填写本仓库的 GitHub 用户或组织、仓库名以及文件名 `release.yml`，允许 `npm publish`，Environment 留空。工作流未使用 npm 发布 Token。
 

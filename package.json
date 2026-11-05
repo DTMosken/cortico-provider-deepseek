@@ -5,6 +5,10 @@
   "description": "Cortico 的 DeepSeek Responses API 模型供应商扩展，支持峰谷计价与关闭、低、高、最大四档思考。",
   "license": "MIT",
   "author": "DTMosken",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DTMosken/cortico-provider-deepseek.git"
+  },
   "engines": {
     "node": ">=22"
   },
