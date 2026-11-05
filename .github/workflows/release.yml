@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: Version increment
+        description: Prepare a version PR, publish, or finish an npm release
         type: choice
         required: true
         default: patch
@@ -12,6 +12,11 @@ on:
           - patch
           - minor
           - major
+          - publish
+          - finish
+
+permissions:
+  contents: read
 
 concurrency:
   group: npm-release
@@ -26,6 +31,8 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
+      pull-requests: write
+      actions: write
       id-token: write
     defaults:
       run:
@@ -33,6 +40,10 @@ jobs:
         working-directory: extension
 
     steps:
+      - name: Require main
+        working-directory: .
+        run: test "$GITHUB_REF" = refs/heads/main
+
       - name: Check out extension
         uses: actions/checkout@v7
         with:
@@ -67,6 +78,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Prepare version
+        if: inputs.release_type != 'publish' && inputs.release_type != 'finish'
         env:
           RELEASE_TYPE: ${{ inputs.release_type }}
         run: |
@@ -101,7 +113,7 @@ jobs:
           import { join } from 'node:path';
           const [pack] = JSON.parse(readFileSync(join(process.env.RUNNER_TEMP, 'npm-pack.json'), 'utf8'));
           const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
-          for (const file of [pkg.main, pkg.cortico.webUiClient, pkg.cortico.webUiStyle, pkg.cortico.describe, 'CHANGELOG.md', 'AGENTS.md', 'CLAUDE.md'].filter(Boolean)) {
+          for (const file of [pkg.main, pkg.cortico.webUiClient, pkg.cortico.webUiStyle, pkg.cortico.describe, 'CHANGELOG.md', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'LICENSE'].filter(Boolean)) {
             if (!pack.files.some((entry) => entry.path === file.replace(/^\.\//, ''))) {
               throw new Error('Release is missing ' + file);
             }
@@ -110,40 +122,104 @@ jobs:
             'tarball=' + join(process.env.RUNNER_TEMP, pack.filename),
             'name=' + pkg.name,
             'version=' + pkg.version,
+            'integrity=' + pack.integrity,
             '',
           ].join('\n'));
           console.log(pkg.name + '@' + pkg.version + ': ' + pack.files.length + ' files');
           NODE
 
-      - name: Commit version and push tag
+      - name: Open version PR
+        if: inputs.release_type != 'publish' && inputs.release_type != 'finish'
         env:
+          GH_TOKEN: ${{ github.token }}
           PACKAGE_VERSION: ${{ steps.package.outputs.version }}
         run: |
+          branch="release/v$PACKAGE_VERSION"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- package.json
           git commit -m "build(package.json): release $PACKAGE_VERSION"
-          git tag "v$PACKAGE_VERSION"
-          git push --atomic origin "HEAD:$GITHUB_REF_NAME" "refs/tags/v$PACKAGE_VERSION"
+          git push origin "HEAD:refs/heads/$branch"
+          cat > "$RUNNER_TEMP/release-pr.md" <<EOF
+          更新 npm 包版本为 $PACKAGE_VERSION。
+
+          合并后，在 main 手动运行 Release 并选择 publish。
+          EOF
+          pr_url=$(gh pr create --base main --head "$branch" --title "build(package.json): release $PACKAGE_VERSION" --body-file "$RUNNER_TEMP/release-pr.md")
+          gh workflow run ci.yml --ref "$branch"
+          printf 'Version PR: %s\n' "$pr_url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Push version tag
+        if: inputs.release_type == 'publish'
+        env:
+          PACKAGE_VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          tag="v$PACKAGE_VERSION"
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            if [ "$(git rev-parse "$tag^{commit}")" != "$(git rev-parse HEAD)" ]; then
+              printf '%s belongs to another commit. Merge a new version PR before publishing.\n' "$tag" >&2
+              exit 1
+            fi
+          else
+            git tag "$tag"
+            git push origin "refs/tags/$tag"
+          fi
 
       - name: Publish to npm
+        if: inputs.release_type == 'publish'
         env:
           TARBALL: ${{ steps.package.outputs.tarball }}
         run: npm publish "$TARBALL" --access public --registry=https://registry.npmjs.org
 
       - name: Verify npm version
+        if: inputs.release_type == 'publish' || inputs.release_type == 'finish'
         env:
           PACKAGE_NAME: ${{ steps.package.outputs.name }}
           PACKAGE_VERSION: ${{ steps.package.outputs.version }}
+          PACKAGE_INTEGRITY: ${{ steps.package.outputs.integrity }}
         run: |
-          for attempt in {1..12}; do
-            exact=$(npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version --registry=https://registry.npmjs.org --fetch-retries=0 --fetch-timeout=10000 2>/dev/null || true)
-            latest=$(npm view "$PACKAGE_NAME" dist-tags.latest --registry=https://registry.npmjs.org --fetch-retries=0 --fetch-timeout=10000 2>/dev/null || true)
-            if [ "$exact" = "$PACKAGE_VERSION" ] && [ "$latest" = "$PACKAGE_VERSION" ]; then
-              printf 'Published [%s@%s](https://www.npmjs.com/package/%s/v/%s)\n' "$PACKAGE_NAME" "$PACKAGE_VERSION" "$PACKAGE_NAME" "$PACKAGE_VERSION" >> "$GITHUB_STEP_SUMMARY"
-              exit 0
-            fi
-            sleep 5
-          done
-          printf 'Registry did not confirm %s@%s: exact=%s latest=%s\n' "$PACKAGE_NAME" "$PACKAGE_VERSION" "$exact" "$latest" >&2
-          exit 1
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from 'node:fs';
+          const name = process.env.PACKAGE_NAME;
+          const version = process.env.PACKAGE_VERSION;
+          let verified = false;
+          for (let attempt = 0; attempt < 60; attempt++) {
+            const read = async path => {
+              const url = 'https://registry.npmjs.org/' + encodeURIComponent(name) + '/' + path + '?verify=' + Date.now() + '-' + attempt;
+              try {
+                const response = await fetch(url, { headers: { 'cache-control': 'no-cache' }, signal: AbortSignal.timeout(10000) });
+                return response.ok ? await response.json() : null;
+              } catch { return null; }
+            };
+            const [exact, latest] = await Promise.all([read(version), read('latest')]);
+            if (exact?.version === version && latest?.version === version) {
+              if (exact.dist?.integrity !== process.env.PACKAGE_INTEGRITY) throw new Error('Published tarball does not match workflow pack');
+              appendFileSync(process.env.GITHUB_STEP_SUMMARY, 'Verified [' + name + '@' + version + '](https://www.npmjs.com/package/' + name + '/v/' + version + ')\n');
+              verified = true;
+              break;
+            }
+            await new Promise(resolve => setTimeout(resolve, 5000));
+          }
+          if (!verified) throw new Error('Registry did not confirm ' + name + '@' + version);
+          NODE
+
+      - name: Create GitHub release
+        if: inputs.release_type == 'publish' || inputs.release_type == 'finish'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_NAME: ${{ steps.package.outputs.name }}
+          PACKAGE_VERSION: ${{ steps.package.outputs.version }}
+          TARBALL: ${{ steps.package.outputs.tarball }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          const lines = readFileSync('CHANGELOG.md', 'utf8').split(/\r?\n/);
+          const version = process.env.PACKAGE_VERSION;
+          const start = lines.findIndex(line => line.startsWith('## ' + version + ' '));
+          if (start < 0) throw new Error('Missing changelog for ' + version);
+          let end = start + 1;
+          while (end < lines.length && !lines[end].startsWith('## ')) end++;
+          writeFileSync(join(process.env.RUNNER_TEMP, 'release-notes.md'), lines.slice(start + 1, end).join('\n').trim() + '\n');
+          NODE
+          gh release create "v$PACKAGE_VERSION" "$TARBALL" --verify-tag --title "$PACKAGE_NAME $PACKAGE_VERSION" --notes-file "$RUNNER_TEMP/release-notes.md" --latest

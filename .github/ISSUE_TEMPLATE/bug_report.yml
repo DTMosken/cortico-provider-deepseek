@@ -1,0 +1,62 @@
+name: 缺陷报告
+description: 报告错误行为并提供复现信息。
+title: "[缺陷] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        一个 Issue 描述一个问题。日志、配置和截图请移除密钥、令牌和私人资料；安全漏洞通过 security@mosken.observer 私密报告。
+  - type: textarea
+    id: environment
+    attributes:
+      label: 版本与运行环境
+      description: 源码检出请提供提交 SHA。
+      placeholder: |
+        扩展版本：
+        Cortico 版本：
+        Node.js 版本：
+        操作系统：
+        模型 ID 与思考档位：
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: 实际行为
+      description: 描述观察到的问题；计价问题请附请求时间、用量与费用。
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: 预期行为
+      description: 说明同一配置下预期的请求或计价结果。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤与最小输入
+      description: 提供端点配置与操作步骤，保留复现必需的内容。
+      placeholder: |
+        1. 使用以下配置……
+        2. 发送请求或编辑计价配置……
+        3. 观察到……
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关日志或配置
+      description: 提供与问题直接相关且已脱敏的片段。
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: 补充信息
+      description: 可填写发生频率、截图、临时处理办法或相关 Issue 链接。
+    validations:
+      required: false
