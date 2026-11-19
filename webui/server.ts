@@ -24,14 +24,14 @@ export function deepseekPricingWebUi(host: ProviderWebUiHost): Partial<WebUiPage
     return { name, schedule, band: currentPricingBand(schedule, new Date()), official: pricesForSchedule(schedule) };
   };
   const panels = (base.panels ?? []).flatMap((panel) => panel.id === 'pricing'
-    ? [{ id: 'official-pricing', title: labels.pricing }, panel]
+    ? [{ id: 'web-tools', title: pick(host.language, { zh: '联网工具', en: 'Web tools' }) },
+       { id: 'official-pricing', title: labels.pricing }, panel]
     : [panel]);
   return {
     ...base,
     config: [...(base.config ?? [])],
     panels: [
       ...panels,
-      { id: 'web-tools', title: pick(host.language, { zh: '联网工具', en: 'Web tools' }) },
       { id: 'schedule', title: labels.title, description: labels.description },
     ],
     invoke: async (panel, method, args) => {

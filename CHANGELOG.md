@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Move web tools to the fourth section of the endpoint editor and give each switch its own row.
+
 ## 0.3.0
 
 - Add separate endpoint switches for DeepSeek web search and URL reading. Both default to off.

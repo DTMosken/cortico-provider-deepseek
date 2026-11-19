@@ -6,11 +6,17 @@ export const webToolsPanel: WebUiPanel = {
       'state', [{ name: ctx.scope.instance }],
     );
     if (ctx.signal.aborted) return;
+    const group = ctx.ui.h('div', 'deepseek-web-tools');
     for (const field of state.fields) {
-      const control = ctx.ui.checkbox(field.title, {
-        checked: field.checked, onChange: checked => { void ctx.setConfig(state.groupId, { [field.path]: checked }); },
-      });
-      ctx.root.append(control.el);
+      const row = ctx.ui.h('label');
+      const toggle = ctx.ui.h('input', 'connection-switch');
+      toggle.type = 'checkbox';
+      toggle.setAttribute('role', 'switch');
+      toggle.checked = field.checked;
+      toggle.addEventListener('change', () => void ctx.setConfig(state.groupId, { [field.path]: toggle.checked }), { signal: ctx.signal });
+      row.append(ctx.ui.h('span', undefined, field.title), toggle);
+      group.append(row);
     }
+    ctx.root.append(group);
   },
 };
