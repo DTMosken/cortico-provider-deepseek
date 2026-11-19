@@ -1,12 +1,10 @@
 # Changelog
 
-## 0.3.1
+## 0.3.0 - 2026-11-19
 
-- Move web tools to the fourth section of the endpoint editor and give each switch its own row.
-
-## 0.3.0
-
-- Add separate endpoint switches for DeepSeek web search and URL reading. Both default to off.
+- Add independent web search and URL reading switches for `deepseek-flash` in the fourth section of the endpoint editor. Both default to off and can be used alongside existing function tools.
+- Keep signed web results in the conversation history so follow-up questions can refer to previously read pages.
+- Order reasoning levels from Off through Low and High to Max. New DeepSeek endpoints start with Off.
 
 ## 0.2.2 - 2026-11-05
 
