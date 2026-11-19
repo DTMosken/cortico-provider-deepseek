@@ -15,12 +15,6 @@
     "description": "DeepSeek Responses API，支持峰谷计价与关闭、低、高、最大四档思考。",
     "reasoningTiers": [
       {
-        "id": "high",
-        "label": "高",
-        "thinking": true,
-        "effort": "high"
-      },
-      {
         "id": "none",
         "label": "关闭",
         "thinking": false
@@ -30,6 +24,12 @@
         "label": "低",
         "thinking": true,
         "effort": "low"
+      },
+      {
+        "id": "high",
+        "label": "高",
+        "thinking": true,
+        "effort": "high"
       },
       {
         "id": "max",

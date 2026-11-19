@@ -17,9 +17,9 @@ const reasoningTiers = (language: Language): ReasoningTier[] => {
     en: { high: 'High', none: 'Off', low: 'Low', max: 'Max' },
   });
   return [
-    { id: 'high', label: labels.high, thinking: true, effort: 'high' },
     { id: 'none', label: labels.none, thinking: false },
     { id: 'low', label: labels.low, thinking: true, effort: 'low' },
+    { id: 'high', label: labels.high, thinking: true, effort: 'high' },
     { id: 'max', label: labels.max, thinking: true, effort: 'max' },
   ];
 };
