@@ -1,8 +1,7 @@
 .deepseek-web-tools {
+  display: grid;
+  row-gap: 4px;
   max-width: 420px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
 }
 
 .deepseek-web-tools > label {
@@ -12,17 +11,9 @@
   gap: 20px;
   min-height: 44px;
   padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
   color: var(--ink);
   cursor: pointer;
-}
-
-.deepseek-web-tools > label + label {
-  border-top: 1px solid var(--border);
-  padding-top: 6px;
-  min-height: 50px;
-}
-
-.deepseek-web-tools > label:first-child {
-  padding-bottom: 6px;
-  min-height: 50px;
 }
