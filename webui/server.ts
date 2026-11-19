@@ -4,6 +4,8 @@ import type { LLMProviderEntry } from 'cortico/core/types.ts';
 import responsesCompat from 'cortico/providers/openai-responses-compat/index.ts';
 import { pick } from 'cortico/core/language.ts';
 import { currentPricingBand, parsePricingSchedule, pricesForSchedule } from '../pricing.ts';
+import { webToolsGroup } from '../web-tools.ts';
+import { getByPath } from 'cortico/core/config-schema.ts';
 
 function instanceName(args: unknown[], required: string): string {
   const raw = args[0];
@@ -29,16 +31,24 @@ export function deepseekPricingWebUi(host: ProviderWebUiHost): Partial<WebUiPage
     config: [...(base.config ?? [])],
     panels: [
       ...panels,
+      { id: 'web-tools', title: pick(host.language, { zh: '联网工具', en: 'Web tools' }) },
       { id: 'schedule', title: labels.title, description: labels.description },
     ],
     invoke: async (panel, method, args) => {
-      if (panel !== 'schedule' && panel !== 'official-pricing') return base.invoke?.(panel, method, args);
+      if (panel !== 'schedule' && panel !== 'official-pricing' && panel !== 'web-tools') return base.invoke?.(panel, method, args);
       if (panel === 'official-pricing' && method === 'instances') {
         return host.entries().map(({ name }) => ({ name }));
       }
       const name = instanceName(args, labels.required);
       const entry = host.entries().find((item) => item.name === name)?.entry;
       if (!entry) throw new Error(labels.required);
+      if (panel === 'web-tools' && method === 'state') {
+        const group = webToolsGroup(name, host.language);
+        const fields = Object.entries(group.schema.properties).map(([path, property]) => ({
+          path, title: property.title, checked: getByPath(entry.options ?? {}, path.slice(`providers.${name}.options.`.length)) === true,
+        }));
+        return { groupId: group.id, fields };
+      }
       if (method === 'state') return stateFor(name, entry);
       if (panel === 'schedule' && method === 'save') {
         const raw = args[0] as Record<string, unknown>;

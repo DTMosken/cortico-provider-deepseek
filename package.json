@@ -1,6 +1,6 @@
 {
   "name": "cortico-provider-deepseek",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "type": "module",
   "description": "Cortico 的 DeepSeek Responses API 模型供应商扩展，支持峰谷计价与关闭、低、高、最大四档思考。",
   "license": "MIT",
@@ -19,6 +19,7 @@
   "files": [
     "index.ts",
     "pricing.ts",
+    "web-tools.ts",
     "webui",
     "dist",
     "scripts/migrate-rmb-currency.mjs",

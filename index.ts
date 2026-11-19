@@ -1,7 +1,8 @@
 import type { ProviderModule } from 'cortico/providers/base.ts';
 import type { ReasoningTier } from 'cortico/core/types.ts';
 import { pick, type Language } from 'cortico/core/language.ts';
-import responsesCompat from 'cortico/providers/openai-responses-compat/index.ts';
+import responsesCompat, { compatOptions } from 'cortico/providers/openai-responses-compat/index.ts';
+import { DeepSeekResponsesProvider, enabledWebTools, webToolsGroup } from './web-tools.ts';
 import { normalizePricing, pricesForSchedule } from './pricing.ts';
 import { deepseekPricingWebUi } from './webui/server.ts';
 
@@ -32,6 +33,18 @@ export const DEEPSEEK_PROVIDER: ProviderModule = {
   defaultBaseUrl: 'https://api.deepseek.com',
   baseUrlSuggestions: ['https://api.deepseek.com'],
   webUi: deepseekPricingWebUi,
+  config: (name, entry, language) => [...responsesCompat.config(name, entry, language), webToolsGroup(name, language)],
+  create(name, entry, host) {
+    const instance = responsesCompat.create(name, entry, host);
+    const tools = enabledWebTools(entry);
+    if (!tools.length) return instance;
+    return { ...instance, client: new DeepSeekResponsesProvider({
+      ...compatOptions(entry), baseUrl: entry.baseUrl,
+      apiKey: entry.secret ? host.secret(entry.secret) : undefined,
+      log: host.log, keepThinking: host.keepThinking,
+      media: { enabled: () => entry.multimodal === true, read: host.readBlob },
+    }, tools) };
+  },
   reasoningTiers: reasoningTiers('zh'),
   localize: (language) => ({
     ...responsesCompat.localize?.(language),
