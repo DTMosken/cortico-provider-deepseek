@@ -1,0 +1,19 @@
+.deepseek-web-tools {
+  display: grid;
+  row-gap: 4px;
+  max-width: 420px;
+}
+
+.deepseek-web-tools > label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}

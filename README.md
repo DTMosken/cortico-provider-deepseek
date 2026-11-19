@@ -17,6 +17,10 @@ corepack pnpm add --ignore-workspace cortico-provider-deepseek
 
 ## 成本与计价
 
+在 DeepSeek 端点的「联网工具」中可分别打开「联网搜索」和「阅读链接」，默认均关闭。保存后，`deepseek-flash` 可在普通文本回答中自行搜索，或阅读用户消息中的链接。现有函数工具也随请求发送。强制指定工具或要求 JSON 输出的请求沿用原工具配置。
+
+搜索和抓取免收工具调用费，模型 token 按用量计费。见 [DeepSeek 联网工具](https://api-docs.deepseek.com/zh-cn/guides/web_tools/)。
+
 插件为 `deepseek-flash` 提供人民币模块价目。“DeepSeek 官方价目”面板显示峰谷单价和当前计价档位。端点自定义报价在 Core 的报价编辑区设置，可按模型覆盖模块价目；未设置时使用模块价目。编辑后保存端点生效。
 
 人民币报价使用 `CNY`。已有自定义报价中的 `RMB` 在读取和保存时转换为 `CNY`，单价保持不变。Cortico 的用量报告可按 `usage.rates.CNY` 换算这些费用。

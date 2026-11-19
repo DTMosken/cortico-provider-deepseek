@@ -67,15 +67,15 @@ describe('DeepSeek provider module', () => {
 
  it('declares supported reasoning choices and preserves the API default for existing entries', () => {
   expect(deepseekProvider.reasoningTiers.map(({ id, thinking, effort }) => ({ id, thinking, effort }))).toEqual([
-   { id: 'high', thinking: true, effort: 'high' },
    { id: 'none', thinking: false, effort: undefined },
    { id: 'low', thinking: true, effort: 'low' },
+   { id: 'high', thinking: true, effort: 'high' },
    { id: 'max', thinking: true, effort: 'max' },
   ]);
-  expect(deepseekProvider.localize?.('zh').reasoningTiers?.map(({ label }) => label)).toEqual(['高', '关闭', '低', '最大']);
-  expect(deepseekProvider.localize?.('en').reasoningTiers?.map(({ label }) => label)).toEqual(['High', 'Off', 'Low', 'Max']);
-  expect(deepseekProvider.localize?.(languageOfLocale('zh-Hant')!).reasoningTiers?.map(({ label }) => label)).toEqual(['高', '关闭', '低', '最大']);
-  expect(deepseekProvider.localize?.(languageOfLocale('ja')!).reasoningTiers?.map(({ label }) => label)).toEqual(['High', 'Off', 'Low', 'Max']);
+  expect(deepseekProvider.localize?.('zh').reasoningTiers?.map(({ label }) => label)).toEqual(['关闭', '低', '高', '最大']);
+  expect(deepseekProvider.localize?.('en').reasoningTiers?.map(({ label }) => label)).toEqual(['Off', 'Low', 'High', 'Max']);
+  expect(deepseekProvider.localize?.(languageOfLocale('zh-Hant')!).reasoningTiers?.map(({ label }) => label)).toEqual(['关闭', '低', '高', '最大']);
+  expect(deepseekProvider.localize?.(languageOfLocale('ja')!).reasoningTiers?.map(({ label }) => label)).toEqual(['Off', 'Low', 'High', 'Max']);
   const normalized = deepseekProvider.normalize?.({
    kind: 'deepseek', baseUrl: 'https://api.deepseek.com',
    spec: { model: 'deepseek-flash', thinking: true },

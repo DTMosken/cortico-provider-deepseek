@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 - 2026-11-19
+
+- Add independent web search and URL reading switches for `deepseek-flash` in the fourth section of the endpoint editor. Both default to off and can be used alongside existing function tools.
+- Keep signed web results in the conversation history so follow-up questions can refer to previously read pages.
+- Order reasoning levels from Off through Low and High to Max. New DeepSeek endpoints start with Off.
+
 ## 0.2.2 - 2026-11-05
 
 - Support Cortico 0.2.13. Use its built-in connection pricing editor for custom quotes and keep official peak/off-peak rates in a separate panel.
